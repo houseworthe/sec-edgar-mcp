@@ -6,13 +6,22 @@ from secedgar.core.rest import (
     get_xbrl_frames,
 )
 from mcp.server.fastmcp import FastMCP
-from config import initialize_config
+from .config import initialize_config
+
+# Import new tool modules
+from .insider_tools import register_insider_tools
+from .institutional_tools import register_institutional_tools
+from .financial_parser import register_financial_tools
+from .unified_search import register_unified_tools
+from .cross_company_search import register_cross_company_tools
+from .comprehensive_reports import register_comprehensive_report_tools
+from .person_cik_resolver import integrate_cik_resolver
 
 
 sec_edgar_user_agent = initialize_config()
 
 # Initialize MCP
-mcp = FastMCP("SEC EDGAR MCP", dependencies=["secedgar"])
+mcp = FastMCP("SEC EDGAR MCP", dependencies=["secedgar", "beautifulsoup4", "lxml"])
 
 
 @mcp.tool("get_submissions")
@@ -107,5 +116,14 @@ def get_xbrl_frames_tool(
     )
 
 
+# Register all new tools
+register_insider_tools(mcp, sec_edgar_user_agent)
+register_institutional_tools(mcp, sec_edgar_user_agent)
+register_financial_tools(mcp, sec_edgar_user_agent)
+register_unified_tools(mcp, sec_edgar_user_agent)
+register_cross_company_tools(mcp, sec_edgar_user_agent)
+register_comprehensive_report_tools(mcp, sec_edgar_user_agent)
+integrate_cik_resolver(mcp, sec_edgar_user_agent)
+
 if __name__ == "__main__":
-    mcp.run(transport="streamable-http")
+    mcp.run(transport="stdio")
